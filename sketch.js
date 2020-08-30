@@ -106,6 +106,7 @@ function draw()
         var isContact=enemies[i].checkContact(gameChar_world_x,gameChar_y+6);
         if(isContact){
             if(lives>0){
+                lives--;
                 startGame();
                 break;
             }
