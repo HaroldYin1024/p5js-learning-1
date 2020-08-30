@@ -724,7 +724,7 @@ function startGame()
     
     
     game_score=0;
-    flagpole={isReached: false, x_pos:5000};
+    flagpole={isReached: false, x_pos:2000};
     
 
 }
