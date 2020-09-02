@@ -6,6 +6,19 @@
 https://freesound.org/
 
 
+Comment for extension:
+1. Create Platforms
+
+I have created platforms in different height. Player can jump on the platform to collect items and jump over canyons. The part I found Difficult is that my logic in checkCanyons had a bug, when I jumped on the platform over the canyon, player still fell. Then I add one logic in the if statement of checkCanyon to see whether it is contacted. If it is, then isFalling won't be changed into true. Another difficulty is to check whether my character is just over the platform. Sometimes there are gaps between charater's foot and the platform. I need to test the appropriate distance when returning true on isContacted. The skills I have learnt from creating platforms is using factory function. Through this way, I can push new array items with objects that have unique variables and methods. It is useful when I would like to create numerous objects with methods.
+
+
+
+
+
+2.Create Enemies
+
+I have created some enemies in the game project. When players get close with the enemies, it will lose one life and go back to the start point. The bit I found difficult in this part is to check the distance between character and enemies, the distance can not be too small. At the begging, I set the distance to be 5px, if always return false. I've done some test and finally found an appropriate distance. The skills I have learnt from creating enemies is to use constructures. Same as factory, constructers can facilitate creating objects with complex methods and variables. Different from factory is that it should use new to create while factory use return objects. In the future, I would practice constructers more to create objects for time saving and code cleaning.
+
 */
 
 var gameChar_x;
@@ -22,7 +35,7 @@ var canyons;
 
 
 
-var trees_x;
+var tree_x;
 var collectables;
 var clouds;
 var mountains;
@@ -49,6 +62,8 @@ function preload()
 }
 
 
+
+
 function setup()
 {
 	createCanvas(1024, 576);
@@ -60,6 +75,8 @@ function setup()
 
 }
 
+
+
 function draw()
 {
 	background(100, 155, 255); // fill the sky blue
@@ -68,7 +85,6 @@ function draw()
 	fill(0,155,0);
 	rect(0, floorPos_y, width, height/4); // draw some green ground
 
-    
     push();
     translate(scrollPos,0);
 	// Draw clouds.
@@ -78,12 +94,9 @@ function draw()
 	// Draw trees.
     drawTrees();
     
+    //Draw Platforms
     for(var i=0;i<platforms.length;i++){
         platforms[i].draw();
-    
-    
-    
-    
     }
 
 	// Draw canyons.
@@ -98,8 +111,10 @@ function draw()
         
     }
 
+    //Draw Flagpole
     renderFlagpole();
     
+    //check enemies
     for(var i=0;i<enemies.length;i++){
         enemies[i].draw();
         
@@ -113,16 +128,10 @@ function draw()
         }
     }
     
-    
-    
-    
-    
-    
-    
     pop();
     
-    
-     for(var i=0;i<canyons.length;i++)
+    //check falling of canyons
+    for(var i=0;i<canyons.length;i++)
     {
         checkCanyon(canyons[i]);
     }
@@ -130,10 +139,8 @@ function draw()
     // Update real position of gameChar for collision detection.
 	gameChar_world_x = gameChar_x - scrollPos;
 
-	// Draw game character.
 	
-	
-    
+    // Draw Lives
     fill(255);
     noStroke();
     textSize(20);
@@ -141,23 +148,31 @@ function draw()
     text("Lives: "+lives,width-100,20);
     for(i=0;i<lives;i++){
         noStroke;
-        fill(255,0,255);
+        fill(255,0,0);
         rect(width-50-50*i,40,20,20);
     }
 
+    
+    //Check Lives
     if(lives<1){
         fill(255);
         textSize(20);
         text("Game over. Press space to continue.",width/2-100,height/2);
+        if(isPlummeting){
+            lives=3;
+            startGame();
+        }
     }else if(flagpole.isReached){
         fill(255);
         textSize(20);
         text("Level complete. Press space to continue.",width/2-100,height/2);
-        
-        
+        if(isPlummeting==true){
+            lives=3
+            startGame();
+        }
     }else{
         drawGameChar();
-            // Logic to make the game character move or the background scroll.
+        // Logic to make the game character move or the background scroll.
         if(isLeft)
         {
             if(gameChar_x > width * 0.2)
@@ -183,12 +198,12 @@ function draw()
         }
 
         
-    //    if(gameChar_x<=canyon.x_pos||gameChar_x>=(canyon.x_pos+canyon.width)){
-    if(isPlummeting==true&&isFalling==false)
-    {
-     gameChar_y-=100;   
-    }
-        
+        //    if(gameChar_x<=canyon.x_pos||gameChar_x>=(canyon.x_pos+canyon.width)){
+        if(isPlummeting==true&&isFalling==false)
+        {
+         gameChar_y-=100;   
+        }
+
         
 	// Logic to make the game character rise and fall.
 
@@ -198,7 +213,7 @@ function draw()
         {
             var isContact=false;
             for(var i=0;i<platforms.length;i++){
-                if(platforms[i].checkContact(gameChar_world_x,gameChar_y-8)){
+                if(platforms[i].checkContact(gameChar_world_x,gameChar_y-9)){
                     isContact=true;
 
                     break;
@@ -206,7 +221,7 @@ function draw()
             }
             
             if(isContact==false){
-                gameChar_y+=2;
+                gameChar_y+=1;
                 isFalling = true;
             }else{
                 isFalling=false;
@@ -219,17 +234,6 @@ function draw()
             isFalling=false;
         }
     
-    
-
-    
-
-//    
-//        if(gameChar_y<floorPos_y+6){
-//            gameChar_y+=1;
-//            isFalling=true
-//        }else{
-//            isFalling=false;
-//        }
         
         if(flagpole.isReached==false)
         {
@@ -239,15 +243,10 @@ function draw()
 	   gameChar_world_x = gameChar_x - scrollPos;
     }
     
-    
-	
-
-    
-        
-   
-
 
 }
+
+
 
 
 // ---------------------
@@ -274,21 +273,24 @@ function keyPressed(){
 
 }
 
+
+
 function keyReleased()
 {
 
     if(keyCode==37){
-        console.log("left");
+
         isLeft=false;
         
     }else if(keyCode==39){
-        console.log("right");
+
         isRight=false;
     }else if(keyCode=32){
         isPlummeting=false;
     }
 
 }
+
 
 
 // ------------------------------
@@ -463,11 +465,11 @@ function drawGameChar()
 	{
 		if(gameChar_x > width * 0.2)
 		{
-			gameChar_x -= 5;
+			gameChar_x -= 1;
 		}
 		else
 		{
-			scrollPos += 5;
+			scrollPos += 1;
 		}
 	}
 
@@ -475,17 +477,19 @@ function drawGameChar()
 	{
 		if(gameChar_x < width * 0.8)
 		{
-			gameChar_x  += 5;
+			gameChar_x  += 1;
 		}
 		else
 		{
-			scrollPos -= 5; // negative for moving against the background
+			scrollPos -= 1; // negative for moving against the background
 		}
 
 	}
     
     checkPlayerDie();
 }
+
+
 
 
 // ---------------------------
@@ -505,6 +509,8 @@ function drawClouds()
     }
 }
 
+
+
 // Function to draw mountains objects.
 function drawMountains()
 {
@@ -519,6 +525,8 @@ function drawMountains()
         triangle(mountains[i].x+mountains[i].width/2+50,mountains[i].y-mountains[i].height+50,mountains[i].x+75,mountains[i].y,mountains[i].x+mountains[i].width+25,mountains[i].y);
     }
 }
+
+
 
 // Function to draw trees objects.
 function drawTrees()
@@ -538,6 +546,8 @@ function drawTrees()
     }
 
 }
+
+
 
 // ---------------------------------
 // Canyon render and check functions
@@ -564,11 +574,24 @@ function drawCanyon(t_canyon)
     }
 }
 
+
 // Function to check character is over a canyon.
 
 function checkCanyon(t_canyon)
 {
-    if(gameChar_world_x>t_canyon.x_pos&&gameChar_world_x<(t_canyon.x_pos+t_canyon.width)){
+    var isContact=false;
+    for(var i=0;i<platforms.length;i++){
+                if(platforms[i].checkContact(gameChar_world_x,gameChar_y-8)){
+                    isContact=true;
+
+                    break;
+                }
+    }
+    
+    
+    
+    if(gameChar_world_x>t_canyon.x_pos&&gameChar_world_x<(t_canyon.x_pos+t_canyon.width)&&!isContact){
+        
         if(gameChar_y>=floorPos_y+6){
             isLeft=false;
             isRight=false;
@@ -581,6 +604,8 @@ function checkCanyon(t_canyon)
         }
     }
 }
+
+
 
 // ----------------------------------
 // Collectable items render and check functions
@@ -603,6 +628,8 @@ function drawCollectable(t_collectable)
         endShape();
 }
 
+
+
 // Function to check character has collected an item.
 
 function checkCollectable(t_collectable)
@@ -616,6 +643,8 @@ function checkCollectable(t_collectable)
 
     }
 }
+
+
 
 
 function renderFlagpole()
@@ -636,12 +665,12 @@ function renderFlagpole()
         rect(flagpole.x_pos,floorPos_y-50,50,50);
     }
     
-    
-    
+
     pop();
     
     
 }
+
 
 
 function checkFlagpole()
@@ -654,6 +683,7 @@ function checkFlagpole()
 }
 
 
+
 function checkPlayerDie()
 {
     
@@ -663,10 +693,10 @@ function checkPlayerDie()
             startGame();
         }
     }
-    
-    
-    
+ 
 }
+
+
 
 
 function startGame()
@@ -689,45 +719,73 @@ function startGame()
 	isPlummeting = false;
 
 	// Initialise arrays of scenery objects.
-    tree_x = [100,300,500,1000,1300,1500,2000,2300,2700,2900];
+    tree_x = [100,300,500,1000,1300,1800,2000,2300,2700,2900,3300];
     
     collectables=[
         {x_pos:800 ,y_pos:432 ,size:50,isFound:false},
-        {x_pos:1600 ,y_pos:432 ,size:50,isFound:false}
+        {x_pos:1000 ,y_pos:floorPos_y-40 ,size:50,isFound:false},
+        {x_pos:1100 ,y_pos:432 ,size:50,isFound:false},
+        {x_pos:1400 ,y_pos:432 ,size:75,isFound:false},
+        {x_pos:1800 ,y_pos:432 ,size:50,isFound:false},
+        {x_pos:2000 ,y_pos:432 ,size:75,isFound:false},
+        {x_pos:2300 ,y_pos:432 ,size:50,isFound:false},
+        {x_pos:2900 ,y_pos:432 ,size:60,isFound:false}
+        
     ];
     
     clouds=[
             {x:100,y:100,size:100},
             {x:500,y:200,size:80},
             {x:1000,y:200,size:100},
-            {x:1500,y:150,size:50}
+            {x:1500,y:150,size:50},
+            {x:1800,y:250,size:150},
+            {x:2200,y:175,size:50},
+            {x:2600,y:175,size:50}
            ];
     
     mountains=[
         {x:475,y:floorPos_y,height:182,width:300},
-        {x:1475,y:floorPos_y,height:182,width:300},
+        {x:1000,y:floorPos_y,height:282,width:400},
+        {x:1800,y:floorPos_y,height:182,width:200},
+        {x:2000,y:floorPos_y,height:182,width:300},
+        {x:3200,y:floorPos_y,height:182,width:300}
     ];
     
     canyons=[
         {x_pos:850,width:100},
-        {x_pos:1800,width:100}
+        {x_pos:1500,width:100},
+        {x_pos:2500,width:100},
+        {x_pos:2800,width:100}
     ];
     
     
     platforms=[];
     
-    platforms.push(createPlatforms(100,floorPos_y-80,100));
-    platforms.push(createPlatforms(1000,floorPos_y-80,200));
+    platforms.push(createPlatforms(150,floorPos_y-75,100));
+    platforms.push(createPlatforms(400,floorPos_y-75,50));
+    platforms.push(createPlatforms(600,floorPos_y-60,150));
+    platforms.push(createPlatforms(900,floorPos_y-40,150));
+    platforms.push(createPlatforms(1500,floorPos_y-60,200));
+    platforms.push(createPlatforms(1800,floorPos_y-75,150));
+    platforms.push(createPlatforms(2200,floorPos_y-75,100));
+    platforms.push(createPlatforms(2500,floorPos_y-60,150));
+    platforms.push(createPlatforms(2800,floorPos_y-75,100));
+    
     
     enemies=[];
     enemies.push(new Enemy(100,floorPos_y-10,100));
+    enemies.push(new Enemy(300,floorPos_y-10,100));
+    enemies.push(new Enemy(800,floorPos_y-10,100));
+    enemies.push(new Enemy(1200,floorPos_y-10,100));
+    enemies.push(new Enemy(1800,floorPos_y-10,100));
     
     
     game_score=0;
-    flagpole={isReached: false, x_pos:2000};
+    flagpole={isReached: false, x_pos:3500};
     
 
 }
+
 
 
 function createPlatforms(x,y,length){
@@ -744,12 +802,10 @@ function createPlatforms(x,y,length){
         {
             if(gc_x>this.x&&gc_x<(this.x+this.length)){
                 var d=this.y-gc_y;
-                if(d>=0&&d<5){
-                    console.log("on platform");
+                if(d>=0&&d<5){             
                     return true;
                 }
-                console.log('inline with platform');
-        
+
             }
             
             return false;
@@ -760,14 +816,11 @@ function createPlatforms(x,y,length){
     }
     
     return p;
-    
-    
-    
-    
-    
-    
-    
+
 }
+
+
+
 
 function Enemy(x,y,range)
 {
@@ -794,7 +847,13 @@ function Enemy(x,y,range)
     this.draw=function(){
         this.update()
         fill(255,0,0);
-        ellipse(this.currentX,y,20,20);
+        rect(this.currentX,y-10,20,20);
+        fill(255,255,0);
+        ellipse(this.currentX+5,this.y-5,4);
+        ellipse(this.currentX+15,this.y-5,4);
+        fill(255,255,255);
+        ellipse(this.currentX+10,this.y+5,8,4);
+
     }
     
     this.checkContact=function(gc_x,gc_y){
